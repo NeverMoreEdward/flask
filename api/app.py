@@ -15,6 +15,7 @@ global tasks
 tasks = []
 
 
+
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     print('get_tasks start')
@@ -25,6 +26,7 @@ def get_tasks():
 def create_task():
     if not request.json or not 'message' in request.json:
         abort(400)
+    tasks = outputdb()
     task = {
         'id': int(tasks[-1]['id']) + 1,
         'message': request.json['message'],
@@ -35,8 +37,9 @@ def create_task():
         '@timestamp': request.json.get('@timestamp', ""),
 	'pythontime': time.time()
     }
-    tasks.append(task)
+
     #sendtext(tasks)
+
     inputdb(task)
     return jsonify({'task': task}), 201
 
@@ -68,7 +71,7 @@ def outputdb():
     connection = sqlite3.connect("../data/errorlog.db")
     connection.row_factory = dict_factory
     cursor = connection.cursor()
-    cursor.execute("select * from errorlog")
+    cursor.execute("select * from errorlog order by id desc limit 0,1")
     results = cursor.fetchall()
     print(results)
     connection.close()
@@ -80,6 +83,7 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
+
+
 if __name__ == '__main__':
-    tasks = outputdb()
     app.run(debug=False,host='0.0.0.0')
