@@ -9,11 +9,17 @@ from flask import request
 import time
 import sqlite3
 import boto3
+import configparser
+import os
+
+curpath = os.path.dirname(os.path.realpath(__file__))
+cfgpath = os.path.join(curpath, "configure.ini")
+conf = configparser.ConfigParser()
+
 
 app = Flask(__name__)
 global tasks
 tasks = []
-
 
 
 @app.route('/tasks', methods=['GET'])
@@ -38,16 +44,19 @@ def create_task():
 	'pythontime': time.time()
     }
 
-    #sendtext(tasks)
+    sendtext(tasks,task)
 
     inputdb(task)
     return jsonify({'task': task}), 201
 
 
-def sendtext(tasks):
+def sendtext(tasks,task):
+    conf.read(cfgpath, encoding="utf-8")
     x = tasks[len(tasks)-1]['pythontime']
-    y = tasks[len(tasks)-2]['pythontime']
-    if x - y < 10:
+    y = task['pythontime']
+    time = int(conf.getint("flask","duration_time"))
+    print (time)
+    if y - x < time:
         print( 'Not time now!!!')
     else:
         print( 'This is the time to input NEW TIME!!!')
@@ -57,7 +66,7 @@ def sendtext(tasks):
 
         response = client.publish(
             PhoneNumber="+61422566402",
-            Message='Demo-Edward')
+            Message='WebOffice Urgency')
 
 def inputdb(data):
     conn = sqlite3.connect('../data/errorlog.db')
