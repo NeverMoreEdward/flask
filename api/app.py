@@ -52,8 +52,8 @@ def sendtext(tasks):
     else:
         print( 'This is the time to input NEW TIME!!!')
         client = boto3.client('sns', region_name='ap-southeast-2',
-                      aws_access_key_id="AKIAJZ2S2NXEKWI2PBAQ",
-                    aws_secret_access_key="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")
+                      aws_access_key_id="",
+                    aws_secret_access_key="")
 
         response = client.publish(
             PhoneNumber="+61422566402",
