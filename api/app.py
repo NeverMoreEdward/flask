@@ -24,8 +24,6 @@ tasks = []
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
-    print('get_tasks start')
-    print('get_tasks end')
     return jsonify({'tasks': tasks})
 
 @app.route('/tasks', methods=['POST'])
@@ -45,28 +43,32 @@ def create_task():
     }
 
     sendtext(tasks,task)
-
     inputdb(task)
+
     return jsonify({'task': task}), 201
 
 
 def sendtext(tasks,task):
     conf.read(cfgpath, encoding="utf-8")
-    x = tasks[len(tasks)-1]['pythontime']
-    y = task['pythontime']
+    x = task['pythontime']
     time = int(conf.getint("flask","duration_time"))
+    old_time = float(conf.get("flask","old_time"))
+
     print (time)
-    if y - x < time:
+
+    if x - old_time < time:
         print( 'Not time now!!!')
     else:
+        conf.set("flask", "old_time", str(x))
+        conf.write(open("configure.ini", "w"))  
         print( 'This is the time to input NEW TIME!!!')
         client = boto3.client('sns', region_name='ap-southeast-2',
                       aws_access_key_id="",
                     aws_secret_access_key="")
 
         response = client.publish(
-            PhoneNumber="+61422566402",
-            Message='WebOffice Urgency')
+            PhoneNumber="+61",
+            Message='')
 
 def inputdb(data):
     conn = sqlite3.connect('../data/errorlog.db')
