@@ -17,7 +17,6 @@ curpath = os.path.dirname(os.path.realpath(__file__))
 cfgpath = os.path.join(curpath, "configure.ini")
 conf = configparser.ConfigParser()
 
-
 app = Flask(__name__)
 global tasks
 tasks = []
@@ -30,6 +29,7 @@ def get_tasks():
 @app.route('/tasks', methods=['POST'])
 def create_task():
     if not request.json or not 'message' in request.json:
+        flaskerror()
         abort(400)
     tasks = outputdb()
     task = {
@@ -69,7 +69,22 @@ def sendtext(tasks,task):
 
         response = client.publish(
             PhoneNumber="+61",
-            Message='')
+            Message='WebOffice Dataset Urgency')
+
+def flaskerror():
+    conf.read(cfgpath, encoding="utf-8")
+    num = int(conf.get("flask","num"))
+    if num < 10:
+        print(num)
+        conf.set("flask", "num", str(num+1))
+        conf.write(open("configure.ini", "w"))  
+        client = boto3.client('sns', region_name='ap-southeast-2',
+                      aws_access_key_id="",
+                    aws_secret_access_key="")
+
+        response = client.publish(
+            PhoneNumber="+61",
+            Message='Flask Error')
 
 def inputdb(data):
     conn = sqlite3.connect('../data/errorlog.db')
